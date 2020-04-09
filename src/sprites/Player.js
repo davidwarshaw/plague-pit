@@ -6,7 +6,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
     scene.physics.world.enable(this);
     scene.add.existing(this);
 
-    //this.setOrigin(0, 0);
+    this.setOrigin(0, 0);
 
     this.body.setSize(20, 32);
     this.body.setBounce(0.0);
@@ -85,11 +85,11 @@ export default class Player extends Phaser.GameObjects.Sprite {
     let actionThisUpdate = false;
 
     // If we land, the jump is over
-    if (this.body.onFloor()) {
+    if (onSomething) {
       this.inJump = false;
     }
 
-    if (keys.jump.isDown && this.body.onFloor() && !this.jumpPressed) {
+    if (keys.jump.isDown && onSomething && !this.jumpPressed) {
       // console.log('Keys: jump');
       if (!this.inAction) {
         this.anims.play('player_jump', true);
@@ -130,7 +130,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
       if (!this.inAction && !this.inJump) {
         this.anims.play('player_walk', true);
       }
-      const walkSpeed = this.body.onFloor() ? this.walkSpeed : this.airwalkSpeed;
+      const walkSpeed = onSomething ? this.walkSpeed : this.airwalkSpeed;
       this.body.setVelocityX(-walkSpeed);
       this.flipX = true;
       if (this.inAction && actionThisUpdate) {
@@ -142,7 +142,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
       if (!this.inAction && !this.inJump) {
         this.anims.play('player_walk', true);
       }
-      const walkSpeed = this.body.onFloor() ? this.walkSpeed : this.airwalkSpeed;
+      const walkSpeed = onSomething ? this.walkSpeed : this.airwalkSpeed;
       this.body.setVelocityX(walkSpeed);
       this.flipX = false;
       if (this.inAction && actionThisUpdate) {
@@ -162,7 +162,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
     }
 
     // If we're falling, switch the animation to the jump anim
-    if (!this.body.onFloor() && !this.inJump && !this.inAction) {
+    if (!onSomething && !this.inJump && !this.inAction) {
       this.anims.play('player_jump', true);
     }
   }

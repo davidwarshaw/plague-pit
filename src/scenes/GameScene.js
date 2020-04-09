@@ -23,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.player = new Player(this, this.map, { x: 5, y: 3 });
     this.bodies = [];
-    this.bodies.push(new Body(this, this.map, { x: 2, y: 2 }, 0));
+    this.bodies.push(new Body(this, this.map, { x: 2, y: 2 }, 1));
 
     // Physics
     this.physics.world.setBounds(0, 0, widthInPixels, heightInPixels);
@@ -60,6 +60,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    if (this.cart.pickUp) {
+      this.bodies.push(new Body(this, this.map, { x: 2, y: 2 }, 1));
+    }
+
     // Collide player
     if (this.player.digDirection) {
       // console.log(`this.player.digDirection: ${this.player.digDirection}`);
@@ -75,9 +79,13 @@ export default class GameScene extends Phaser.Scene {
       this.physics.world.collide(this.player, this.map.layers.collision);
     }
 
-    this.physics.world.collide(this.player, this.bodies);
+    // Collide bodies
+    this.physics.world.collide(this.bodies, this.bodies);
+    this.physics.world.collide(this.bodies, this.player);
     this.physics.world.collide(this.bodies, this.map.layers.collision);
 
     this.player.update(this, delta, this.keys);
+
+    this.cart.update(this, delta);
   }
 }

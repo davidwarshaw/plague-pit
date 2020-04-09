@@ -6,11 +6,6 @@ export default class BootScene extends Phaser.Scene {
   preload() {
     // Misc
     this.load.image('font-small', 'assets/fonts/atari_like.png');
-    this.load.image('pokeball-big', 'assets/images/pokeball_big.png');
-    this.load.image('select-frame', 'assets/images/select_frame.png');
-    this.load.image('window-small', 'assets/images/window_small.png');
-    this.load.image('window-big', 'assets/images/window_big.png');
-    this.load.image('window-intro', 'assets/images/window_intro.png');
 
     // Maps
     this.load.image('tileset', 'assets/images/tileset.png');

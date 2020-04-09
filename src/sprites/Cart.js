@@ -7,6 +7,14 @@ export default class Cart extends Phaser.GameObjects.Sprite {
 
     this.setOrigin(0, 0);
 
+    this.walkSpeed = 0.05;
+    this.isDumping = false;
+    this.isBringing = true;
+    this.pickUp = false;
+
+    this.pickupTileX = -2;
+    this.dumpTileX = 4;
+
     const world = map.tilemap.tileToWorldXY(tile.x, tile.y);
     this.setPosition(world.x, world.y);
 
@@ -45,5 +53,34 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     );
   }
 
-  update(scene, delta) {}
+  update(scene, delta) {
+    const adjustedWalkSpeed = delta * this.walkSpeed;
+
+    this.pickUp = false;
+
+    if (this.isDumping) {
+      this.anims.play('cart_dump', true);
+      this.isDumping = false;
+      this.isBringing = false;
+    }
+    else if (!this.isBringing) {
+      this.anims.play('cart_walk', true);
+      this.x += -adjustedWalkSpeed;
+
+      const world = scene.map.tilemap.tileToWorldXY(this.pickupTileX, 0);
+      if (this.x <= world.x) {
+        this.isBringing = true;
+        this.pickUp = true;
+      }
+    }
+    else if (this.isBringing) {
+      this.anims.play('cart_walk', true);
+      this.x += adjustedWalkSpeed;
+
+      const world = scene.map.tilemap.tileToWorldXY(this.dumpTileX, 0);
+      if (this.x >= world.x) {
+        this.isDumping = true;
+      }
+    }
+  }
 }
