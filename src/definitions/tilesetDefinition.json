@@ -1,0 +1,26 @@
+{
+  "open": {
+    "index": -1,
+    "collide": false
+  },
+  "dirt-light": {
+    "index": 0,
+    "collide": true
+  },
+  "dirt-medium": {
+    "index": 1,
+    "collide": true
+  },
+  "dirt-heavy": {
+    "index": 2,
+    "collide": true
+  },
+  "dirt-removed": {
+    "index": 5,
+    "collide": false
+  },
+  "grass": {
+    "index": 6,
+    "collide": false
+  }
+}
