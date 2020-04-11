@@ -19,8 +19,15 @@ const config = {
   },
   parent: 'game-container',
   physics: {
-    default: 'arcade',
-    arcade: { gravity: { y: 500 }, debug: properties.debug }
+    default: 'matter',
+    matter: {
+      gravity: { y: 1 },
+      enableSleep: true,
+      debug: {
+        showBody: properties.debug,
+        showStaticBody: properties.debug
+      }
+    }
   },
   scene: [BootScene, TitleScene, GameScene, GameOverScene, WinScene]
 };

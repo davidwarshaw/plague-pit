@@ -89,6 +89,23 @@ function addHalfTile(point) {
   return { x: point.x + 0.5 * properties.tileWidth, y: point.y + 0.5 * properties.tileHeight };
 }
 
+function getTileNeighborByDirection(tile, direction) {
+  switch (direction) {
+    case 'left': {
+      return { x: tile.x - 1, y: tile.y };
+    }
+    case 'right': {
+      return { x: tile.x + 1, y: tile.y };
+    }
+    case 'up': {
+      return { x: tile.x, y: tile.y - 1 };
+    }
+    case 'down': {
+      return { x: tile.x, y: tile.y + 1 };
+    }
+  }
+}
+
 function distance(from, to) {
   return Math.abs(to.x - from.x) + Math.abs(to.y - from.y);
 }
@@ -168,6 +185,7 @@ export default {
   tileFromScreen,
   screenFromTile,
   addHalfTile,
+  getTileNeighborByDirection,
   distance,
   transpose,
   reverseRows,

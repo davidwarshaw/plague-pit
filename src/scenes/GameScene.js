@@ -5,6 +5,8 @@ import Player from '../sprites/Player';
 import Cart from '../sprites/Cart';
 import Body from '../sprites/Body';
 
+import TileMath from '../utils/TileMath';
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: 'GameScene' });
@@ -15,6 +17,13 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // Physics
+    this.matter.world.setBounds(0, 0, widthInPixels, heightInPixels);
+
+    this.collisionCategories = {};
+    this.collisionCategories['main'] = this.matter.world.nextCategory();
+    this.collisionCategories['none'] = this.matter.world.nextCategory();
+
     // Map and player
     this.map = new Map(this);
     const { widthInPixels, heightInPixels } = this.map.tilemap;
@@ -23,10 +32,6 @@ export default class GameScene extends Phaser.Scene {
 
     this.player = new Player(this, this.map, { x: 5, y: 3 });
     this.bodies = [];
-    this.bodies.push(new Body(this, this.map, { x: 2, y: 2 }, 1));
-
-    // Physics
-    this.physics.world.setBounds(0, 0, widthInPixels, heightInPixels);
 
     // Camera
     this.cameras.main.setBounds(0, 0, widthInPixels, heightInPixels);
@@ -42,50 +47,37 @@ export default class GameScene extends Phaser.Scene {
     };
   }
 
-  playerTileCollision(player, tile) {
-    const tileInDirection = this.map.isTileInDirection(player, tile, player.digDirection);
-
-    // console.log(`tileInDirection: ${tileInDirection}`);
-    if (!tileInDirection) {
+  playerDig() {
+    const diggingInDirection = this.player.touching[this.player.digDirection];
+    if (!diggingInDirection) {
       return;
     }
-    if (
-      (player.digDirection === 'up' && player.body.blocked.up) ||
-      (player.digDirection === 'down' && player.body.blocked.down) ||
-      (player.digDirection === 'left' && player.body.blocked.left) ||
-      (player.digDirection === 'right' && player.body.blocked.right)
-    ) {
-      this.map.digTile(tile);
-    }
+    const playerTile = this.map.tilemap.worldToTileXY(this.player.x, this.player.y);
+    console.log(playerTile);
+    console.log(diggingInDirection);
+    const neighborTile = TileMath.getTileNeighborByDirection(playerTile, this.player.digDirection);
+    console.log(neighborTile);
+    this.map.digTile(neighborTile);
   }
 
   update(time, delta) {
     if (this.cart.pickUp) {
-      this.bodies.push(new Body(this, this.map, { x: 2, y: 2 }, 1));
+      if (this.bodies.length < this.playState.numBodies) {
+        this.bodies.push(new Body(this, this.map, this.cart, 1));
+        this.cart.pickUpBody(this.bodies[this.bodies.length - 1]);
+      }
+      else {
+        this.nextLevel();
+      }
     }
-
-    // Collide player
-    if (this.player.digDirection) {
-      // console.log(`this.player.digDirection: ${this.player.digDirection}`);
-      this.physics.world.collide(
-        this.player,
-        this.map.layers.collision,
-        this.playerTileCollision,
-        null,
-        this
-      );
-    }
-    else {
-      this.physics.world.collide(this.player, this.map.layers.collision);
-    }
-
-    // Collide bodies
-    this.physics.world.collide(this.bodies, this.bodies);
-    this.physics.world.collide(this.bodies, this.player);
-    this.physics.world.collide(this.bodies, this.map.layers.collision);
-
     this.player.update(this, delta, this.keys);
 
     this.cart.update(this, delta);
+
+    this.playerDig();
+  }
+
+  nextLevel() {
+    this.scene.start('TitleScene', this.playState);
   }
 }

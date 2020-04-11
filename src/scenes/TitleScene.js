@@ -8,7 +8,9 @@ export default class TitleScene extends Phaser.Scene {
   }
 
   create() {
-    this.playState = {};
+    this.playState = {
+      numBodies: 20
+    };
 
     this.font = new Font(this);
 

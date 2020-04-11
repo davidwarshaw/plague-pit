@@ -23,7 +23,7 @@ export default class Map {
         else if (y === 4) {
           this.layers.collision.putTileAt(tilesetDefinition['grass'].index, x, y);
         }
-        else if (y >= 5 && y <= 5 && x >= 4 && x <= 5) {
+        else if (y >= 5 && y <= 6 && x >= 5 && x <= 6) {
           this.layers.collision.putTileAt(tilesetDefinition['dirt-removed'].index, x, y);
         }
         else {
@@ -35,6 +35,17 @@ export default class Map {
     //this.layers.foreground = this.tilemap.createBlankDynamicLayer('foreground', this.tileset);
 
     this.layers.collision.setCollision(this.getCollisionIndices());
+
+    scene.matter.world.convertTilemapLayer(this.layers.collision);
+    this.layers.collision.forEachTile(tile => {
+      const { matterBody } = tile.physics;
+      if (matterBody) {
+        matterBody.setCollisionCategory(scene.collisionCategories.main);
+        matterBody.setCollidesWith(scene.collisionCategories.main);
+      }
+    });
+
+    scene.matter.world.setBounds(this.tilemap.widthInPixels, this.tilemap.heightInPixels);
   }
 
   getCollisionIndices() {
@@ -43,36 +54,12 @@ export default class Map {
       .map(tile => tile.index);
   }
 
-  isTileInDirection(player, tile, digDirection) {
-    const world = this.tilemap.tileToWorldXY(tile.x, tile.y);
-    const delta = {
-      x: player.x - world.x,
-      y: player.y - world.y
-    };
-    const abs = {
-      x: Math.abs(delta.x),
-      y: Math.abs(delta.y)
-    };
-
-    // console.log(`player: ${player.x}, ${player.y} world: ${world.x}, ${world.y}`);
-    // console.log(`abs: ${abs.x}, ${abs.y} delta: ${delta.x}, ${delta.y}`);
-    switch (digDirection) {
-      case 'up': {
-        return abs.y > abs.x && delta.y > 0;
-      }
-      case 'down': {
-        return abs.y > abs.x && delta.y <= 0;
-      }
-      case 'left': {
-        return abs.y <= abs.x && delta.x > 0;
-      }
-      case 'right': {
-        return abs.y <= abs.x && delta.x <= 0;
-      }
-    }
-  }
-
   digTile(tile) {
+    const collisionTile = this.tilemap.getTileAt(tile.x, tile.y);
+    if (collisionTile.physics.matterBody) {
+      collisionTile.physics.matterBody.destroy();
+    }
+
     const recalculateFaces = true;
     this.tilemap.putTileAt(
       tilesetDefinition['dirt-removed'].index,

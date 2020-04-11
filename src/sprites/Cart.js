@@ -12,10 +12,14 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     this.isBringing = true;
     this.pickUp = false;
 
-    this.pickupTileX = -2;
+    this.pickupTileX = -4;
     this.dumpTileX = 4;
 
-    const world = map.tilemap.tileToWorldXY(tile.x, tile.y);
+    this.carryingBody = null;
+    this.carryOffsetX = 64;
+    this.carryOffsetY = 0;
+
+    const world = map.tilemap.tileToWorldXY(this.pickupTileX, tile.y);
     this.setPosition(world.x, world.y);
 
     scene.anims.create({
@@ -51,6 +55,25 @@ export default class Cart extends Phaser.GameObjects.Sprite {
       },
       this
     );
+
+    // Start by picking up a body
+    this.pickUp = true;
+  }
+
+  pickUpBody(body) {
+    this.carryingBody = body;
+    this.carryingBody.setIgnoreGravity(true);
+    this.carryingBody.setCollidesWith(this.scene.collisionCategories.none);
+    this.carryingBody.setPosition(this.x + this.carryOffsetX, this.y + this.carryOffsetY);
+  }
+
+  dumpBody() {
+    if (!this.carryingBody) {
+      return;
+    }
+    this.carryingBody.setIgnoreGravity(false);
+    this.carryingBody.setCollidesWith(this.scene.collisionCategories.main);
+    this.carryingBody = null;
   }
 
   update(scene, delta) {
@@ -62,6 +85,7 @@ export default class Cart extends Phaser.GameObjects.Sprite {
       this.anims.play('cart_dump', true);
       this.isDumping = false;
       this.isBringing = false;
+      this.dumpBody();
     }
     else if (!this.isBringing) {
       this.anims.play('cart_walk', true);
@@ -81,6 +105,10 @@ export default class Cart extends Phaser.GameObjects.Sprite {
       if (this.x >= world.x) {
         this.isDumping = true;
       }
+    }
+
+    if (this.carryingBody) {
+      this.carryingBody.setPosition(this.x + this.carryOffsetX, this.y + this.carryOffsetY);
     }
   }
 }
