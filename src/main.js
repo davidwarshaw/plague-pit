@@ -5,6 +5,7 @@ import properties from './properties';
 import BootScene from './scenes/BootScene';
 import TitleScene from './scenes/TitleScene';
 import GameScene from './scenes/GameScene';
+import HudScene from './scenes/HudScene';
 import GameOverScene from './scenes/GameOverScene';
 import WinScene from './scenes/WinScene';
 
@@ -22,14 +23,15 @@ const config = {
     default: 'matter',
     matter: {
       gravity: { y: 1 },
-      enableSleep: true,
-      debug: {
-        showBody: properties.debug,
-        showStaticBody: properties.debug
-      }
+      enableSleep: true
+
+      // debug: {
+      //   showBody: properties.debug,
+      //   showStaticBody: properties.debug
+      // }
     }
   },
-  scene: [BootScene, TitleScene, GameScene, GameOverScene, WinScene]
+  scene: [BootScene, TitleScene, GameScene, HudScene, GameOverScene, WinScene]
 };
 
 const game = new Phaser.Game(config); // eslint-disable-line no-unused-vars

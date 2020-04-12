@@ -12,7 +12,7 @@ export default class WinScene extends Phaser.Scene {
   }
 
   create() {
-  // console.log(this.playState);
+    // console.log(this.playState);
     this.font = new Font(this);
 
     this.images = [];
@@ -38,14 +38,14 @@ export default class WinScene extends Phaser.Scene {
     this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
 
     // Register the mouse listener
-    this.input.on('pointerdown', () => this.pointerdown());
+    this.input.keyboard.on('keydown', () => this.keyDown());
   }
 
   offsetForText(text) {
     return -(text.length * 8) / 2;
   }
 
-  pointerdown() {
+  keyDown() {
     this.scene.start('TitleScene');
   }
 }

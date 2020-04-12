@@ -17,6 +17,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.pestilence = 0;
+    this.pestilenceTimeFactor = 0.01;
+    this.pestilenceBodyFactor = 0.1;
+    this.pestilenceDiminishFactor = 0.01;
+
+    this.infection = 0;
+    this.infectionTimeFactor = 0.3;
+    this.infectionBodyFactor = 20;
+    this.infectionDiminishFactor = 0.1;
+
     // Physics
     this.matter.world.setBounds(0, 0, widthInPixels, heightInPixels);
 
@@ -48,15 +58,13 @@ export default class GameScene extends Phaser.Scene {
   }
 
   playerDig() {
+    const playerTile = this.map.tilemap.worldToTileXY(this.player.x, this.player.y);
     const diggingInDirection = this.player.touching[this.player.digDirection];
-    if (!diggingInDirection) {
+    if (!diggingInDirection || playerTile.y < properties.groundLevel) {
       return;
     }
-    const playerTile = this.map.tilemap.worldToTileXY(this.player.x, this.player.y);
-    console.log(playerTile);
-    console.log(diggingInDirection);
+
     const neighborTile = TileMath.getTileNeighborByDirection(playerTile, this.player.digDirection);
-    console.log(neighborTile);
     this.map.digTile(neighborTile);
   }
 
@@ -70,14 +78,69 @@ export default class GameScene extends Phaser.Scene {
         this.nextLevel();
       }
     }
-    this.player.update(this, delta, this.keys);
 
+    this.player.update(this, delta, this.keys);
     this.cart.update(this, delta);
 
     this.playerDig();
+
+    this.updatePestilence(delta);
+    this.updateInfection(delta);
+    this.updateMeters();
+    this.checkMeters();
+  }
+
+  updatePestilence(delta) {
+    const groundY = (properties.groundLevel + 1.5) * properties.tileHeight;
+    const bodiesExposed = this.bodies
+      .map(body => (groundY - body.y) * body.exposureFactor)
+      .filter(exposure => exposure > 0)
+      .reduce((acc, curr) => acc + curr, 0);
+    const add = bodiesExposed * this.pestilenceBodyFactor * this.pestilenceTimeFactor * delta;
+    const subtract = this.pestilenceDiminishFactor * delta;
+    const newValue = this.pestilence + add - subtract;
+
+    // console.log(
+    //   `bodiesExposed: ${bodiesExposed} add: ${add} subtract: ${subtract} newValue: ${newValue}`
+    // );
+    this.pestilence = Phaser.Math.Clamp(newValue, 0, 100);
+  }
+  updateInfection(delta) {
+    const numBodiesTouching = ['left', 'right', 'up', 'down']
+      .map(direction => this.player.touchingBody[direction])
+      .filter(touching => touching).length;
+    const add = numBodiesTouching * this.infectionBodyFactor * this.pestilenceTimeFactor * delta;
+    const subtract = this.infectionDiminishFactor * delta;
+    const newValue = this.infection + add - subtract;
+
+    // console.log(
+    //   `numBodiesTouching: ${numBodiesTouching} add: ${add} subtract: ${subtract} newValue: ${newValue}`
+    // );
+    this.infection = Phaser.Math.Clamp(newValue, 0, 100);
+  }
+
+  updateMeters() {
+    const meters = {
+      pestilence: this.pestilence,
+      infection: this.infection
+    };
+    this.events.emit('update-meters', meters);
+  }
+
+  checkMeters() {
+    if (this.pestilence >= 100) {
+    }
+    if (this.infection >= 100) {
+    }
   }
 
   nextLevel() {
+    this.scene.start('TitleScene', this.playState);
+  }
+  repeatLevel() {
+    this.scene.start('TitleScene', this.playState);
+  }
+  gameOver() {
     this.scene.start('TitleScene', this.playState);
   }
 }

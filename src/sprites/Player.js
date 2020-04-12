@@ -33,8 +33,12 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.setBounce(0);
     this.setFriction(0);
 
+    this.setDepth(2);
+
     this.setCollisionCategory(scene.collisionCategories.main);
     this.setCollidesWith(scene.collisionCategories.main);
+
+    this.type = 'player';
 
     this.walkSpeed = 3.5;
     this.airwalkSpeed = 2;
@@ -95,11 +99,21 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       up: false,
       down: false
     };
+    this.touchingBody = {
+      left: false,
+      right: false,
+      up: false,
+      down: false
+    };
     scene.matter.world.on('beforeupdate', () => {
       this.touching.left = false;
       this.touching.right = false;
       this.touching.up = false;
       this.touching.down = false;
+      this.touchingBody.left = false;
+      this.touchingBody.right = false;
+      this.touchingBody.up = false;
+      this.touchingBody.down = false;
     });
     scene.matter.world.on('collisionactive', event => {
       const left = this.sensors.left;
@@ -114,17 +128,53 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         if (bodyA === this.mainBody || bodyB === this.mainBody) {
           continue;
         }
-        else if (bodyA === left || bodyB === left) {
+        else if (bodyA === left) {
           this.touching.left = true;
+          if (bodyB.gameObject.type === 'body') {
+            this.touchingBody.left = true;
+          }
         }
-        else if (bodyA === right || bodyB === right) {
+        else if (bodyA === right) {
           this.touching.right = true;
+          if (bodyB.gameObject.type === 'body') {
+            this.touchingBody.right = true;
+          }
         }
-        else if (bodyA === up || bodyB === up) {
+        else if (bodyA === up) {
           this.touching.up = true;
+          if (bodyB.gameObject.type === 'body') {
+            this.touchingBody.up = true;
+          }
         }
-        else if (bodyA === down || bodyB === down) {
+        else if (bodyA === down) {
           this.touching.down = true;
+          if (bodyB.gameObject.type === 'body') {
+            this.touchingBody.down = true;
+          }
+        }
+        else if (bodyB === left) {
+          this.touching.left = true;
+          if (bodyA.gameObject.type === 'body') {
+            this.touchingBody.left = true;
+          }
+        }
+        else if (bodyB === right) {
+          this.touching.right = true;
+          if (bodyA.gameObject.type === 'body') {
+            this.touchingBody.right = true;
+          }
+        }
+        else if (bodyB === up) {
+          this.touching.up = true;
+          if (bodyA.gameObject.type === 'body') {
+            this.touchingBody.up = true;
+          }
+        }
+        else if (bodyB === down) {
+          this.touching.down = true;
+          if (bodyA.gameObject.type === 'body') {
+            this.touchingBody.down = true;
+          }
         }
       }
     });

@@ -17,13 +17,13 @@ export default class Map {
 
     [...Array(properties.mapHeightTiles).keys()].map(y =>
       [...Array(properties.mapWidthTiles).keys()].map(x => {
-        if (y < 4) {
+        if (y < properties.groundLevel) {
           this.layers.collision.putTileAt(tilesetDefinition['open'].index, x, y);
         }
-        else if (y === 4) {
+        else if (y === properties.groundLevel) {
           this.layers.collision.putTileAt(tilesetDefinition['grass'].index, x, y);
         }
-        else if (y >= 5 && y <= 6 && x >= 5 && x <= 6) {
+        else if (y >= properties.groundLevel + 1 && y <= 6 && x >= 5 && x <= 6) {
           this.layers.collision.putTileAt(tilesetDefinition['dirt-removed'].index, x, y);
         }
         else {

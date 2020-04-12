@@ -22,28 +22,25 @@ export default class TitleScene extends Phaser.Scene {
     let offsetY = 40;
 
     offsetY += -32;
-    let text = 'Monster Garden';
+    let text = 'Plague Pit';
     let offsetX = this.offsetForText(text);
     this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
 
-    // offsetY += 32;
-    // this.images.push(this.add.image(centerX, centerY + offsetY, 'uwumbstone'));
-    //
-    // const numberCaptured = this.playState.pokemon.captured.length;
     offsetY += 32;
-    text = 'Click to Play';
+    text = 'Press any key';
     offsetX = this.offsetForText(text);
     this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
 
     // Register the mouse listener
-    this.input.on('pointerdown', () => this.pointerdown());
+    this.input.keyboard.on('keydown', () => this.keyDown());
   }
 
   offsetForText(text) {
     return -(text.length * 8) / 2;
   }
 
-  pointerdown() {
+  keyDown() {
     this.scene.start('GameScene', this.playState);
+    this.scene.start('HudScene', this.playState);
   }
 }

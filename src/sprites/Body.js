@@ -15,9 +15,15 @@ export default class Body extends Phaser.Physics.Matter.Sprite {
     this.setBounce(0);
     this.setFriction(0.1);
 
+    this.setDepth(0);
+
     this.setCollisionCategory(scene.collisionCategories.main);
     this.setCollidesWith(scene.collisionCategories.main);
 
     this.setPosition(spawn.x, spawn.y);
+
+    this.type = 'body';
+
+    this.exposureFactor = 1;
   }
 }

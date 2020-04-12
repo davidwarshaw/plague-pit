@@ -7,6 +7,8 @@ export default class Cart extends Phaser.GameObjects.Sprite {
 
     this.setOrigin(0, 0);
 
+    this.setDepth(0);
+
     this.walkSpeed = 0.05;
     this.isDumping = false;
     this.isBringing = true;
@@ -65,6 +67,7 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     this.carryingBody.setIgnoreGravity(true);
     this.carryingBody.setCollidesWith(this.scene.collisionCategories.none);
     this.carryingBody.setPosition(this.x + this.carryOffsetX, this.y + this.carryOffsetY);
+    this.carryingBody.exposureFactor = 0;
   }
 
   dumpBody() {
@@ -73,6 +76,7 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     }
     this.carryingBody.setIgnoreGravity(false);
     this.carryingBody.setCollidesWith(this.scene.collisionCategories.main);
+    this.carryingBody.exposureFactor = 1;
     this.carryingBody = null;
   }
 
@@ -83,9 +87,11 @@ export default class Cart extends Phaser.GameObjects.Sprite {
 
     if (this.isDumping) {
       this.anims.play('cart_dump', true);
-      this.isDumping = false;
-      this.isBringing = false;
       this.dumpBody();
+      scene.time.delayedCall(properties.uiHangMillis, () => {
+        this.isDumping = false;
+        this.isBringing = false;
+      });
     }
     else if (!this.isBringing) {
       this.anims.play('cart_walk', true);
