@@ -8,7 +8,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('font-small', 'assets/fonts/atari_like.png');
 
     // Maps
-    this.load.image('tileset', 'assets/images/tileset.png');
+    this.load.image('tileset-2', 'assets/images/tileset-2.png');
 
     // Sprites
     this.load.spritesheet('player', 'assets/images/player_spritesheet.png', {

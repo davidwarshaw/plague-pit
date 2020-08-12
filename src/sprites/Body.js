@@ -1,29 +1,45 @@
-export default class Body extends Phaser.Physics.Matter.Sprite {
-  constructor(scene, map, spawn, type) {
-    const key = `body-0${type}`;
-    super(scene.matter.world, 0, 0, key);
-    scene.add.existing(this);
+import bodyDefinition from '../definitions/bodyDefinition.json';
 
-    const M = Phaser.Physics.Matter.Matter;
-    this.mainBody = M.Bodies.rectangle(0, 0, this.width, this.height, {
-      chamfer: { radius: 10 }
-    });
-
-    this.setExistingBody(this.mainBody);
-
-    this.setFixedRotation();
-    this.setBounce(0);
-    this.setFriction(0.1);
-
-    this.setDepth(0);
-
-    this.setCollisionCategory(scene.collisionCategories.main);
-    this.setCollidesWith(scene.collisionCategories.main);
-
-    this.setPosition(spawn.x, spawn.y);
-
+export default class Body {
+  constructor(scene, map, type, spawn) {
+    this.scene = scene;
+    this.map = map;
     this.type = 'body';
 
-    this.exposureFactor = 1;
+    const key = `body-0${type}`;
+
+    this.tile;
+
+    this.inPlay = false;
+    this.maxExposureFactor = 1;
+    this.exposureFactor = 0;
+
+    this.matrix = bodyDefinition[key].matrix;
+
+    this.image = scene.add.image(spawn.x, spawn.y, key).setOrigin(0, 0);
+  }
+
+  dumpFromCart(playerTile) {
+    let tileCandidate = this.map.tilemap.worldToTileXY(this.image.x, this.image.y);
+
+    this.inPlay = true;
+    this.exposureFactor = this.maxExposureFactor;
+
+    this.image.destroy();
+    this.image = null;
+
+    // Find a clear spot to drop the body
+    while (
+      tileCandidate.y > 0 &&
+      !this.map.spaceForBodyIsClear(tileCandidate, this.matrix, playerTile)) {
+      tileCandidate.y -= 1;
+    }
+    
+    this.tile = tileCandidate;
+    this.map.addBodyTiles(this.tile, this.matrix);
+  }
+
+  setPosition(x, y) {
+    this.image.setPosition(x, y);
   }
 }

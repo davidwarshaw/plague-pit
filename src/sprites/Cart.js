@@ -18,8 +18,8 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     this.dumpTileX = 4;
 
     this.carryingBody = null;
-    this.carryOffsetX = 64;
-    this.carryOffsetY = 0;
+    this.carryOffsetX = 32;
+    this.carryOffsetY = -10;
 
     const world = map.tilemap.tileToWorldXY(this.pickupTileX, tile.y);
     this.setPosition(world.x, world.y);
@@ -64,30 +64,25 @@ export default class Cart extends Phaser.GameObjects.Sprite {
 
   pickUpBody(body) {
     this.carryingBody = body;
-    this.carryingBody.setIgnoreGravity(true);
-    this.carryingBody.setCollidesWith(this.scene.collisionCategories.none);
     this.carryingBody.setPosition(this.x + this.carryOffsetX, this.y + this.carryOffsetY);
-    this.carryingBody.exposureFactor = 0;
   }
 
-  dumpBody() {
+  dumpBody(playerTile) {
     if (!this.carryingBody) {
       return;
     }
-    this.carryingBody.setIgnoreGravity(false);
-    this.carryingBody.setCollidesWith(this.scene.collisionCategories.main);
-    this.carryingBody.exposureFactor = 1;
+    this.carryingBody.dumpFromCart(playerTile);
     this.carryingBody = null;
   }
 
-  update(scene, delta) {
+  update(scene, delta, playerTile) {
     const adjustedWalkSpeed = delta * this.walkSpeed;
 
     this.pickUp = false;
 
     if (this.isDumping) {
       this.anims.play('cart_dump', true);
-      this.dumpBody();
+      this.dumpBody(playerTile);
       scene.time.delayedCall(properties.uiHangMillis, () => {
         this.isDumping = false;
         this.isBringing = false;

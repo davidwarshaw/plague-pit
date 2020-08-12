@@ -7,6 +7,8 @@ import Body from '../sprites/Body';
 
 import TileMath from '../utils/TileMath';
 
+import BodySystem from '../systems/BodySystem';
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: 'GameScene' });
@@ -43,6 +45,8 @@ export default class GameScene extends Phaser.Scene {
     this.player = new Player(this, this.map, { x: 5, y: 3 });
     this.bodies = [];
 
+    this.bodySystem = new BodySystem(this, this.map, this.bodies, this.player);
+
     // Camera
     this.cameras.main.setBounds(0, 0, widthInPixels, heightInPixels);
     this.cameras.main.startFollow(this.player, true, 1, 1, 0, 0);
@@ -57,21 +61,32 @@ export default class GameScene extends Phaser.Scene {
     };
   }
 
-  playerDig() {
-    const playerTile = this.map.tilemap.worldToTileXY(this.player.x, this.player.y);
+  playerDig(playerTile) {
     const diggingInDirection = this.player.touching[this.player.digDirection];
-    if (!diggingInDirection || playerTile.y < properties.groundLevel) {
+    if (!diggingInDirection) {
       return;
     }
 
     const neighborTile = TileMath.getTileNeighborByDirection(playerTile, this.player.digDirection);
-    this.map.digTile(neighborTile);
+    const mapTile = this.map.tilemap.getTileAt(neighborTile.x, neighborTile.y);
+
+    // If it's a body, hit it
+    if (this.map.getBodyIndices().includes(mapTile.index)) {
+      this.bodySystem.hitBody(mapTile, this.player.digDirection, playerTile);
+    }
+
+    // Early exit if we can't dig
+    if (!this.map.getDiggableIndices().includes(mapTile.index)) {
+      return;
+    }
+
+    this.map.digTile(mapTile);
   }
 
   update(time, delta) {
     if (this.cart.pickUp) {
       if (this.bodies.length < this.playState.numBodies) {
-        this.bodies.push(new Body(this, this.map, this.cart, 1));
+        this.bodies.push(new Body(this, this.map, 1, this.cart));
         this.cart.pickUpBody(this.bodies[this.bodies.length - 1]);
       }
       else {
@@ -80,9 +95,13 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.player.update(this, delta, this.keys);
-    this.cart.update(this, delta);
+    const playerTile = this.map.tilemap.worldToTileXY(this.player.x, this.player.y);
 
-    this.playerDig();
+    this.cart.update(this, delta, playerTile);
+
+    this.playerDig(playerTile);
+
+    this.bodySystem.bodiesFall(delta, playerTile);
 
     this.updatePestilence(delta);
     this.updateInfection(delta);

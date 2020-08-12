@@ -1,26 +1,32 @@
 {
   "open": {
     "index": -1,
-    "collide": false
+    "collide": false,
+    "diggable": false
   },
   "dirt-light": {
     "index": 0,
-    "collide": true
+    "collide": true,
+    "diggable": true
   },
   "dirt-medium": {
     "index": 1,
-    "collide": true
+    "collide": true,
+    "diggable": true
   },
   "dirt-heavy": {
     "index": 2,
-    "collide": true
+    "collide": true,
+    "diggable": true
   },
   "dirt-removed": {
     "index": 5,
-    "collide": false
+    "collide": false,
+    "diggable": false
   },
   "grass": {
     "index": 6,
-    "collide": false
+    "collide": false,
+    "diggable": false
   }
 }
