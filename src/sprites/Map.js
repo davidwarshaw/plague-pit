@@ -3,8 +3,9 @@ import properties from '../properties.js';
 import tilesetDefinition from '../definitions/tilesetDefinition.json';
 
 export default class Map {
-  constructor(scene) {
+  constructor(scene, level) {
     this.scene = scene;
+    this.level = level;
 
     const { tileWidth, tileHeight } = properties;
     const width = properties.mapWidthTiles;
@@ -25,7 +26,16 @@ export default class Map {
         else if (y >= properties.groundLevel + 1 && y <= 6 && x >= 5 && x <= 6) {
           return tilesetDefinition['dirt-removed'].index;
         }
+        else if (y === properties.mapHeightTiles - 1) {
+          return tilesetDefinition['bedrock'].index;
+        }
         else {
+          const roll = properties.rng.getPercentage();
+          for (let obstacle of ['stone', 'dirt-heavy', 'dirt-medium']) {
+            if (roll <= level * tilesetDefinition[obstacle].baseRatio) {
+              return tilesetDefinition[obstacle].index;
+            }
+          }
           return tilesetDefinition['dirt-light'].index;
         }
       })
@@ -48,6 +58,38 @@ export default class Map {
     this.layers.collision.forEachTile((tile) => this.setMatterColliders(tile));
 
     scene.matter.world.setBounds(this.tilemap.widthInPixels, this.tilemap.heightInPixels);
+  }
+
+  indexIsBody(index) {
+    const isBody = index >= 25;
+    return isBody;
+  }
+
+  tileIsClear(tile) {
+    const collisionTile = this.tilemap.getTileAt(tile.x, tile.y, true, 'collision');
+    if (!collisionTile) {
+      return false;
+    }
+    const isClear = !this.getCollisionIndices().includes(collisionTile.index);
+    return isClear;
+  }
+
+  tileIsBody(tile) {
+    const collisionTile = this.tilemap.getTileAt(tile.x, tile.y, true, 'collision');
+    if (!collisionTile) {
+      return false;
+    }
+    return this.indexIsBody(collisionTile.index);
+  }
+
+  getTypeForIndex(index) {
+    const types = Object.entries(tilesetDefinition)
+      .filter((entry) => entry[1].index === index)
+      .map((entry) => entry[0]);
+    if (types.length === 1) {
+      return types[0];
+    }
+    return null;
   }
 
   getDiggableIndices() {
@@ -84,20 +126,39 @@ export default class Map {
     }
   }
 
-  digTile(tile) {
-    if (tile.physics.matterBody) {
-      tile.physics.matterBody.destroy();
-    }
+  changeTile(tile, newType) {
+    const { index, collide } = tilesetDefinition[newType];
 
-    this.collisionTileIndexes[tile.y][tile.x] = tilesetDefinition['dirt-removed'].index;
+    this.collisionTileIndexes[tile.y][tile.x] = index;
     const recalculateFaces = true;
-    this.tilemap.putTileAt(
-      tilesetDefinition['dirt-removed'].index,
+    const newTile = this.tilemap.putTileAt(
+      index,
       tile.x,
       tile.y,
       recalculateFaces,
       this.layers.collision
     );
+
+    // If the tile isn't collidable, remove the physics body
+    if (!collide && newTile.physics.matterBody) {
+      tile.physics.matterBody.destroy();
+    }
+    else if (collide && !newTile.physics.matterBody) {
+      this.scene.matter.add.tileBody(newTile);
+      this.setMatterColliders(newTile);
+    }
+    
+  }
+
+  digTile(tile) {
+    const currentType = this.getTypeForIndex(tile.index);
+    const newType = tilesetDefinition[currentType].digsTo;
+    this.changeTile(tile, newType);
+  }
+
+  fillTile(tile) {
+    const newType = 'dirt-fill';
+    this.changeTile(tile, newType);
   }
 
   addBodyTiles(tile, matrix) {
@@ -141,7 +202,7 @@ export default class Map {
             }
 
             // If the tilemap has a collision tile, it's not clear
-            const collisionTile = this.tilemap.getTileAt(tile.x + x, tile.y + y);
+            const collisionTile = this.tilemap.getTileAt(tile.x + x, tile.y + y, true, 'collision');
 
             // console.log(`tile: (${tile.x}, ${tile.y})`);
             // console.log(`(${x}, ${y})`);

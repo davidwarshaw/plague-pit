@@ -24,21 +24,21 @@ export default class WinScene extends Phaser.Scene {
     let offsetX = this.offsetForText(text);
     this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
 
-    offsetY += 32;
-    const pokemonIndex = 25;
-    const pokemonRowOffset = Math.trunc(pokemonIndex / 15) * 120;
-    const pokemonColOffset = (pokemonIndex % 15) * 2;
-    const pokemonSpriteIndex = pokemonRowOffset + pokemonColOffset + 60;
-    this.images.push(this.add.image(centerX, centerY + offsetY, 'pokemon', pokemonSpriteIndex));
-
-    const numberCaptured = this.playState.pokemon.captured.length;
-    offsetY += 32;
-    text = `Captured ${numberCaptured} of 16 monsters`;
-    offsetX = this.offsetForText(text);
-    this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
-
-    // Register the mouse listener
     this.input.keyboard.on('keydown', () => this.keyDown());
+    this.buttonIsPressed = false;
+    this.gamePadListeners = false;
+  }
+
+  update() {
+    if (!this.gamePadListeners && this.input.gamepad && this.input.gamepad.pad1) {
+      this.input.gamepad.pad1.on('down', () => {
+        if (!this.buttonIsPressed) {
+          this.keyDown();
+        }
+      });
+      this.input.gamepad.pad1.on('up', () => this.buttonIsPressed = false);
+      this.gamePadListeners = true;
+    }
   }
 
   offsetForText(text) {
@@ -46,6 +46,7 @@ export default class WinScene extends Phaser.Scene {
   }
 
   keyDown() {
-    this.scene.start('TitleScene');
+    this.input.gamepad.removeAllListeners();
+    this.scene.start('TitleScene', this.playState);
   }
 }

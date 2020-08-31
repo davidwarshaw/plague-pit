@@ -2,17 +2,16 @@ import properties from '../properties';
 
 import Font from '../ui/Font';
 
-export default class TitleScene extends Phaser.Scene {
+export default class LevelTitleScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'TitleScene' });
+    super({ key: 'LevelTitleScene' });
+  }
+
+  init(playState) {
+    this.playState = playState;
   }
 
   create() {
-    this.playState = {
-      level: 1,
-      maxLevels: 10,
-    };
-
     this.font = new Font(this);
 
     const centerX = properties.width / 2;
@@ -20,15 +19,16 @@ export default class TitleScene extends Phaser.Scene {
 
     this.images = [];
 
-    this.images.push(this.add.image(centerX, centerY, 'title-big'));
+    let offsetY = 20;
+    this.images.push(this.add.image(centerX, centerY + offsetY, 'shovel'));
 
-    const offsetY = 70;
-    const text = 'press any key or button';
-    const offsetX = this.offsetForText(text);
+    offsetY += -32;
+    let text = `night ${this.playState.level}`;
+    let offsetX = this.offsetForText(text);
     this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
 
     this.input.keyboard.on('keydown', () => this.keyDown());
-    this.buttonIsPressed = false;
+    this.buttonIsPressed = true;
     this.gamePadListeners = false;
   }
 
@@ -50,7 +50,7 @@ export default class TitleScene extends Phaser.Scene {
 
   keyDown() {
     this.input.gamepad.removeAllListeners();
-    this.scene.start('LevelTitleScene', this.playState);
+    this.scene.start('GameScene', this.playState);
+    this.scene.start('HudScene', this.playState);
   }
-
 }

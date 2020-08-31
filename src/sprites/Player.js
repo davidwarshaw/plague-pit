@@ -1,19 +1,19 @@
-import properties from '../properties';
+import properties from "../properties";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(scene, map, tile) {
-    super(scene.matter.world, 0, 0, 'player', 0);
+    super(scene.matter.world, 0, 0, "player", 0);
     scene.add.existing(this);
 
     const M = Phaser.Physics.Matter.Matter;
     this.mainBody = M.Bodies.rectangle(0, 0, this.width * 0.75, this.height, {
-      chamfer: { radius: 10 }
+      chamfer: { radius: 10 },
     });
     this.sensors = {
       left: M.Bodies.rectangle(-this.width * 0.45, 0, 5, this.height * 0.25, { isSensor: true }),
       right: M.Bodies.rectangle(this.width * 0.45, 0, 5, this.height * 0.25, { isSensor: true }),
       up: M.Bodies.rectangle(0, -this.height * 0.5, this.width * 0.5, 5, { isSensor: true }),
-      down: M.Bodies.rectangle(0, this.height * 0.5, this.width * 0.5, 5, { isSensor: true })
+      down: M.Bodies.rectangle(0, this.height * 0.5, this.width * 0.5, 5, { isSensor: true }),
     };
     this.compoundBody = M.Body.create({
       parts: [
@@ -21,10 +21,10 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.sensors.left,
         this.sensors.right,
         this.sensors.up,
-        this.sensors.down
+        this.sensors.down,
       ],
       friction: 0.01,
-      restitution: 0.05 // Prevent body from sticking against a wall
+      restitution: 0.05, // Prevent body from sticking against a wall
     });
 
     this.setExistingBody(this.compoundBody);
@@ -38,7 +38,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.setCollisionCategory(scene.collisionCategories.main);
     this.setCollidesWith(scene.collisionCategories.main);
 
-    this.type = 'player';
+    this.type = "player";
 
     this.walkSpeed = 3.5;
     this.airwalkSpeed = 2;
@@ -54,38 +54,38 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.setPosition(world.x, world.y);
 
     scene.anims.create({
-      key: 'player_idle',
-      frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 0 }),
+      key: "player_idle",
+      frames: scene.anims.generateFrameNumbers("player", { start: 0, end: 0 }),
       frameRate: properties.animFrameRate,
-      repeat: -1
+      repeat: -1,
     });
     scene.anims.create({
-      key: 'player_walk',
-      frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 1, first: 1 }),
+      key: "player_walk",
+      frames: scene.anims.generateFrameNumbers("player", { start: 0, end: 1, first: 1 }),
       frameRate: properties.animFrameRate,
-      repeat: -1
+      repeat: -1,
     });
     scene.anims.create({
-      key: 'player_jump',
-      frames: scene.anims.generateFrameNumbers('player', { start: 2, end: 2 }),
+      key: "player_jump",
+      frames: scene.anims.generateFrameNumbers("player", { start: 2, end: 2 }),
       frameRate: properties.animFrameRate,
-      repeat: -1
+      repeat: -1,
     });
     scene.anims.create({
-      key: 'player_action',
-      frames: scene.anims.generateFrameNumbers('player', { start: 4, end: 5 }),
+      key: "player_action",
+      frames: scene.anims.generateFrameNumbers("player", { start: 4, end: 5 }),
       frameRate: properties.animFrameRate,
-      repeat: 0
+      repeat: 0,
     });
 
-    this.anims.play('player_walk', true);
+    this.anims.play("player_walk", true);
 
     const stopFrame = this.anims.currentAnim.frames[0];
     this.anims.stopOnFrame(stopFrame);
 
     // and reset the flag when the animation completes
     this.on(
-      Phaser.Animations.Events.SPRITE_ANIMATION_KEY_COMPLETE + 'player_action',
+      Phaser.Animations.Events.SPRITE_ANIMATION_KEY_COMPLETE + "player_action",
       () => {
         // console.log('animation complete: player_action');
         this.inAction = false;
@@ -97,15 +97,15 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       left: false,
       right: false,
       up: false,
-      down: false
+      down: false,
     };
     this.touchingBody = {
       left: false,
       right: false,
       up: false,
-      down: false
+      down: false,
     };
-    scene.matter.world.on('beforeupdate', () => {
+    scene.matter.world.on("beforeupdate", () => {
       this.touching.left = false;
       this.touching.right = false;
       this.touching.up = false;
@@ -115,7 +115,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       this.touchingBody.up = false;
       this.touchingBody.down = false;
     });
-    scene.matter.world.on('collisionactive', event => {
+    scene.matter.world.on("collisionactive", (event) => {
       const left = this.sensors.left;
       const right = this.sensors.right;
       const up = this.sensors.up;
@@ -127,52 +127,44 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
         if (bodyA === this.mainBody || bodyB === this.mainBody) {
           continue;
-        }
-        else if (bodyA === left) {
+        } else if (bodyA === left) {
           this.touching.left = true;
-          if (bodyB.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyB.gameObject.tile.index)) {
             this.touchingBody.left = true;
           }
-        }
-        else if (bodyA === right) {
+        } else if (bodyA === right) {
           this.touching.right = true;
-          if (bodyB.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyB.gameObject.tile.index)) {
             this.touchingBody.right = true;
           }
-        }
-        else if (bodyA === up) {
+        } else if (bodyA === up) {
           this.touching.up = true;
-          if (bodyB.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyB.gameObject.tile.index)) {
             this.touchingBody.up = true;
           }
-        }
-        else if (bodyA === down) {
+        } else if (bodyA === down) {
           this.touching.down = true;
-          if (bodyB.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyB.gameObject.tile.index)) {
             this.touchingBody.down = true;
           }
-        }
-        else if (bodyB === left) {
+        } else if (bodyB === left) {
           this.touching.left = true;
-          if (bodyA.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyA.gameObject.tile.index)) {
             this.touchingBody.left = true;
           }
-        }
-        else if (bodyB === right) {
+        } else if (bodyB === right) {
           this.touching.right = true;
-          if (bodyA.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyA.gameObject.tile.index)) {
             this.touchingBody.right = true;
           }
-        }
-        else if (bodyB === up) {
+        } else if (bodyB === up) {
           this.touching.up = true;
-          if (bodyA.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyA.gameObject.tile.index)) {
             this.touchingBody.up = true;
           }
-        }
-        else if (bodyB === down) {
+        } else if (bodyB === down) {
           this.touching.down = true;
-          if (bodyA.gameObject.type === 'body') {
+          if (map.indexIsBody(bodyA.gameObject.tile.index)) {
             this.touchingBody.down = true;
           }
         }
@@ -184,16 +176,16 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     return this.touching.left || this.touching.right || this.touching.up || this.touching.down;
   }
 
-  update(scene, delta, keys) {
+  update(scene, delta, inputMultiplexer) {
     this.digDirection = null;
 
     const onSomething = this.touching.down;
 
     // Reset pressed flags
-    if (!keys.jump.isDown) {
+    if (!inputMultiplexer.jump()) {
       this.jumpPressed = false;
     }
-    if (!keys.action.isDown) {
+    if (!inputMultiplexer.action()) {
       this.actionPressed = false;
     }
 
@@ -204,81 +196,77 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       this.inJump = false;
     }
 
-    if (keys.jump.isDown && onSomething && !this.jumpPressed) {
+    if (inputMultiplexer.jump() && onSomething && !this.jumpPressed) {
       // console.log('Keys: jump');
       if (!this.inAction) {
-        this.anims.play('player_jump', true);
+        this.anims.play("player_jump", true);
       }
       this.setVelocityY(-this.jumpSpeed);
       this.jumpPressed = true;
       this.inJump = true;
     }
 
-    if (keys.action.isDown && !this.actionPressed && !this.inAction) {
+    if (inputMultiplexer.action() && !this.actionPressed && !this.inAction) {
       // console.log('Keys: action');
-      this.anims.play('player_action', true);
+      this.anims.play("player_action", true);
       this.actionPressed = true;
       this.inAction = true;
       actionThisUpdate = true;
     }
 
-    if (keys.up.isDown) {
+    if (inputMultiplexer.up()) {
       // console.log('Keys: up');
       if (!this.inAction && !this.inJump) {
-        this.anims.play('player_walk', true);
+        this.anims.play("player_walk", true);
       }
       if (this.inAction && actionThisUpdate) {
-        this.digDirection = 'up';
+        this.digDirection = "up";
       }
-    }
-    else if (keys.down.isDown) {
+    } else if (inputMultiplexer.down()) {
       // console.log('Keys: down');
       if (!this.inAction && !this.inJump) {
-        this.anims.play('player_walk', true);
+        this.anims.play("player_walk", true);
       }
       if (this.inAction && actionThisUpdate) {
-        this.digDirection = 'down';
+        this.digDirection = "down";
       }
-    }
-    else if (keys.left.isDown) {
+    } else if (inputMultiplexer.left()) {
       // console.log('Keys: left');
       if (!this.inAction && !this.inJump) {
-        this.anims.play('player_walk', true);
+        this.anims.play("player_walk", true);
       }
       const walkSpeed = onSomething ? this.walkSpeed : this.airwalkSpeed;
       this.setVelocityX(-walkSpeed);
       this.flipX = true;
       if (this.inAction && actionThisUpdate) {
-        this.digDirection = 'left';
+        this.digDirection = "left";
       }
-    }
-    else if (keys.right.isDown) {
+    } else if (inputMultiplexer.right()) {
       // console.log('Keys: right');
       if (!this.inAction && !this.inJump) {
-        this.anims.play('player_walk', true);
+        this.anims.play("player_walk", true);
       }
       const walkSpeed = onSomething ? this.walkSpeed : this.airwalkSpeed;
       this.setVelocityX(walkSpeed);
       this.flipX = false;
       if (this.inAction && actionThisUpdate) {
-        this.digDirection = 'right';
+        this.digDirection = "right";
       }
-    }
-    else {
+    } else {
       if (!this.inAction && !this.inJump) {
-        this.anims.play('player_idle', true);
+        this.anims.play("player_idle", true);
       }
       this.setVelocityX(0);
     }
 
     // If we end action in a jump, switch the animation to the jump anim
     if (this.inJump && !this.inAction) {
-      this.anims.play('player_jump', true);
+      this.anims.play("player_jump", true);
     }
 
     // If we're falling, switch the animation to the jump anim
     if (!onSomething && !this.inJump && !this.inAction) {
-      this.anims.play('player_jump', true);
+      this.anims.play("player_jump", true);
     }
   }
 }

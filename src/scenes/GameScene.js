@@ -5,9 +5,11 @@ import Player from '../sprites/Player';
 import Cart from '../sprites/Cart';
 import Body from '../sprites/Body';
 
-import TileMath from '../utils/TileMath';
+import InputMultiplexer from '../utils/InputMultiplexer';
 
 import BodySystem from '../systems/BodySystem';
+import DiseaseSystem from '../systems/DiseaseSystem';
+import DigSystem from '../systems/DigSystem';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -19,15 +21,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.pestilence = 0;
-    this.pestilenceTimeFactor = 0.01;
-    this.pestilenceBodyFactor = 0.1;
-    this.pestilenceDiminishFactor = 0.01;
 
-    this.infection = 0;
-    this.infectionTimeFactor = 0.3;
-    this.infectionBodyFactor = 20;
-    this.infectionDiminishFactor = 0.1;
+    this.numBodies = 4 + this.playState.level * 2;
+    this.allBodiesDropped = false;
+    this.gameIsOver = false;
 
     // Physics
     this.matter.world.setBounds(0, 0, widthInPixels, heightInPixels);
@@ -37,129 +34,128 @@ export default class GameScene extends Phaser.Scene {
     this.collisionCategories['none'] = this.matter.world.nextCategory();
 
     // Map and player
-    this.map = new Map(this);
+    this.map = new Map(this, this.playState.level);
     const { widthInPixels, heightInPixels } = this.map.tilemap;
 
     this.cart = new Cart(this, this.map, { x: 1, y: 4 });
+
+    this.moon = this.add.image(600, 20, 'moon');
 
     this.player = new Player(this, this.map, { x: 5, y: 3 });
     this.bodies = [];
 
     this.bodySystem = new BodySystem(this, this.map, this.bodies, this.player);
+    this.diseaseSystem = new DiseaseSystem(this, this.map, this.bodies, this.player);
+    this.digSystem = new DigSystem(this, this.map, this.bodySystem, this.player);
 
-    // Camera
     this.cameras.main.setBounds(0, 0, widthInPixels, heightInPixels);
     this.cameras.main.startFollow(this.player, true, 1, 1, 0, 0);
 
-    this.keys = {
-      action: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
-      jump: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X),
-      up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
-    };
-  }
+    this.inputMultiplexer = new InputMultiplexer(this);
 
-  playerDig(playerTile) {
-    const diggingInDirection = this.player.touching[this.player.digDirection];
-    if (!diggingInDirection) {
-      return;
-    }
-
-    const neighborTile = TileMath.getTileNeighborByDirection(playerTile, this.player.digDirection);
-    const mapTile = this.map.tilemap.getTileAt(neighborTile.x, neighborTile.y);
-
-    // If it's a body, hit it
-    if (this.map.getBodyIndices().includes(mapTile.index)) {
-      this.bodySystem.hitBody(mapTile, this.player.digDirection, playerTile);
-    }
-
-    // Early exit if we can't dig
-    if (!this.map.getDiggableIndices().includes(mapTile.index)) {
-      return;
-    }
-
-    this.map.digTile(mapTile);
+    this.buttonIsPressed = true;
+    this.gamePadListeners = false;
   }
 
   update(time, delta) {
-    if (this.cart.pickUp) {
-      if (this.bodies.length < this.playState.numBodies) {
+    if (!this.gamePadListeners && this.input.gamepad && this.input.gamepad.pad1) {
+      this.input.gamepad.pad1.on('up', () => this.buttonIsPressed = false);
+      this.gamePadListeners = true;
+      this.inputMultiplexer.registerPad();
+    }
+
+    this.inputMultiplexer.setPadButtons();
+
+    if (this.gameIsOver) {
+      return;
+    }
+
+    if (this.cart && this.cart.pickUp) {
+      if (this.bodies.length < this.numBodies) {
         this.bodies.push(new Body(this, this.map, 1, this.cart));
         this.cart.pickUpBody(this.bodies[this.bodies.length - 1]);
+
+        // Update the night and bodies left whenever the car tpicks up a new body
+        const night = this.playState.level;
+        const bodiesLeft = this.numBodies - this.bodies.length;
+        this.events.emit('bodies-left', { night, bodiesLeft });
       }
       else {
-        this.nextLevel();
+        this.allBodiesDropped = true;
+        this.cart.destroy();
+        this.cart = null;
       }
     }
 
-    this.player.update(this, delta, this.keys);
+    this.player.update(this, delta, this.inputMultiplexer);
     const playerTile = this.map.tilemap.worldToTileXY(this.player.x, this.player.y);
 
-    this.cart.update(this, delta, playerTile);
+    if (this.cart) {
+      this.cart.update(this, delta, playerTile);
+    }
 
-    this.playerDig(playerTile);
+    this.digSystem.update(delta, playerTile);
 
     this.bodySystem.bodiesFall(delta, playerTile);
 
-    this.updatePestilence(delta);
-    this.updateInfection(delta);
-    this.updateMeters();
+    const { pestilence, infection } = this.diseaseSystem.update(delta);
+
+    this.updateMeters(pestilence, infection);
     this.checkMeters();
   }
 
-  updatePestilence(delta) {
-    const groundY = (properties.groundLevel + 1.5) * properties.tileHeight;
-    const bodiesExposed = this.bodies
-      .map(body => (groundY - body.y) * body.exposureFactor)
-      .filter(exposure => exposure > 0)
-      .reduce((acc, curr) => acc + curr, 0);
-    const add = bodiesExposed * this.pestilenceBodyFactor * this.pestilenceTimeFactor * delta;
-    const subtract = this.pestilenceDiminishFactor * delta;
-    const newValue = this.pestilence + add - subtract;
-
-    // console.log(
-    //   `bodiesExposed: ${bodiesExposed} add: ${add} subtract: ${subtract} newValue: ${newValue}`
-    // );
-    this.pestilence = Phaser.Math.Clamp(newValue, 0, 100);
-  }
-  updateInfection(delta) {
-    const numBodiesTouching = ['left', 'right', 'up', 'down']
-      .map(direction => this.player.touchingBody[direction])
-      .filter(touching => touching).length;
-    const add = numBodiesTouching * this.infectionBodyFactor * this.pestilenceTimeFactor * delta;
-    const subtract = this.infectionDiminishFactor * delta;
-    const newValue = this.infection + add - subtract;
-
-    // console.log(
-    //   `numBodiesTouching: ${numBodiesTouching} add: ${add} subtract: ${subtract} newValue: ${newValue}`
-    // );
-    this.infection = Phaser.Math.Clamp(newValue, 0, 100);
-  }
-
-  updateMeters() {
-    const meters = {
-      pestilence: this.pestilence,
-      infection: this.infection
-    };
+  updateMeters(pestilence, infection) {
+    const meters = { pestilence, infection };
     this.events.emit('update-meters', meters);
   }
 
   checkMeters() {
-    if (this.pestilence >= 100) {
-    }
-    if (this.infection >= 100) {
+    if (this.allBodiesDropped && this.diseaseSystem.allBodiesBuried()) {
+      const win = true;
+      this.endPlay(win);
+      this.events.emit('show-win', {});
+    } else if (this.diseaseSystem.pestilence >= 100) {
+      const win = false;
+      this.endPlay(win);
+      this.events.emit('show-loss', 'pestilence');
+    } else if (this.diseaseSystem.infection >= 100) {
+      const win = false;
+      this.endPlay(win);
+      this.events.emit('show-loss', 'infection');
     }
   }
 
   nextLevel() {
-    this.scene.start('TitleScene', this.playState);
+    this.playState.level += 1;
+    if (this.playState.level < this.playState.maxLevels) {
+      this.scene.stop('HudScene');
+      this.scene.start('LevelTitleScene', this.playState);
+    } else {
+      this.scene.stop('HudScene');
+      this.scene.start('WinScene', this.playState);
+    }
   }
-  repeatLevel() {
-    this.scene.start('TitleScene', this.playState);
-  }
+
   gameOver() {
-    this.scene.start('TitleScene', this.playState);
+    this.scene.stop('HudScene');
+    this.scene.start('GameOverScene', this.playState);
+  }
+
+  endPlay(win) {
+    this.gameIsOver = true;
+    
+    this.player.anims.play("player_idle", true);
+    this.player.setVelocity(0);
+    
+    this.endPlayTimer = this.time.delayedCall(
+      properties.levelWaitMillis,
+      () => {
+        if (win) {
+          this.nextLevel();
+        } else {
+          this.gameOver();
+        }
+      },
+      [], this);
   }
 }

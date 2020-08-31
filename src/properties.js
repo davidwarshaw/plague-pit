@@ -14,5 +14,6 @@ export default {
   mapHeightTiles: 12,
   groundLevel: 4,
   animFrameRate: 10,
+  levelWaitMillis: 2000,
   uiHangMillis: 500
 };

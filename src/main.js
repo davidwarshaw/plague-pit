@@ -4,6 +4,7 @@ import properties from './properties';
 
 import BootScene from './scenes/BootScene';
 import TitleScene from './scenes/TitleScene';
+import LevelTitleScene from './scenes/LevelTitleScene';
 import GameScene from './scenes/GameScene';
 import HudScene from './scenes/HudScene';
 import GameOverScene from './scenes/GameOverScene';
@@ -31,7 +32,10 @@ const config = {
       // }
     }
   },
-  scene: [BootScene, TitleScene, GameScene, HudScene, GameOverScene, WinScene]
+  input: {
+    gamepad: true
+  },
+  scene: [BootScene, TitleScene, LevelTitleScene, GameScene, HudScene, GameOverScene, WinScene]
 };
 
 const game = new Phaser.Game(config); // eslint-disable-line no-unused-vars

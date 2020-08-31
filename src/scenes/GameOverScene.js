@@ -12,36 +12,54 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   create() {
-    // console.log(this.playState);
     this.font = new Font(this);
+
+    this.messages = [
+      ['so goeth the way', 'of all flesh'],
+      ['thus passes', 'worldly glory'],
+      ['all is vanity'],
+      ['all those proud', 'shall be brought low']
+    ];
 
     this.images = [];
 
     const centerX = properties.width / 2;
     const centerY = properties.height / 2;
-    let offsetY = -32;
-    let text = 'Game Over';
-    let offsetX = this.offsetForText(text);
-    this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
 
-    offsetY += 32;
-    this.images.push(this.add.image(centerX, centerY + offsetY, 'uwumbstone'));
+    this.images.push(this.add.image(centerX, centerY, 'crown'));
 
-    const numberCaptured = this.playState.pokemon.captured.length;
-    offsetY += 32;
-    text = `Captured ${numberCaptured} of 16 monsters`;
-    offsetX = this.offsetForText(text);
-    this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, text));
+    let text = properties.rng.getItem(this.messages);
+    text.forEach((textLine, row) => {
+      let offsetX = this.offsetForText(textLine);
+      let offsetY = -32 + (16 * row);
+      this.images.push(this.font.render(centerX + offsetX, centerY + offsetY, textLine));  
+    });
 
-    // Register the mouse listener
     this.input.keyboard.on('keydown', () => this.keyDown());
+    this.buttonIsPressed = false;
+    this.gamePadListeners = false;
+  }
+
+  update() {
+    if (!this.gamePadListeners && this.input.gamepad && this.input.gamepad.pad1) {
+      this.input.gamepad.pad1.on('down', () => {
+        if (!this.buttonIsPressed) {
+          this.keyDown();
+        }
+      });
+      this.input.gamepad.pad1.on('up', () => this.buttonIsPressed = false);
+      this.gamePadListeners = true;
+    }
   }
 
   offsetForText(text) {
-    return -(text.length * 8) / 2;
+    const offset = - ((text.length * 8) / 2) - 80;
+    return offset;
   }
 
   keyDown() {
-    this.scene.start('TitleScene');
+    this.input.gamepad.removeAllListeners();
+    this.scene.start('LevelTitleScene', this.playState);
   }
+
 }
