@@ -18,8 +18,8 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     this.dumpTileX = 4;
 
     this.carryingBody = null;
-    this.carryOffsetX = 32;
-    this.carryOffsetY = -10;
+    this.carryOffsetX = 64;
+    this.carryOffsetY = 18;
 
     const world = map.tilemap.tileToWorldXY(this.pickupTileX, tile.y);
     this.setPosition(world.x, world.y);

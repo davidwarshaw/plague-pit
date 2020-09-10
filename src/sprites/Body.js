@@ -16,7 +16,7 @@ export default class Body {
 
     this.matrix = bodyDefinition[key].matrix;
 
-    this.image = scene.add.image(spawn.x, spawn.y, key).setOrigin(0, 0);
+    this.image = scene.add.image(spawn.x, spawn.y, key).setOrigin(0.5, 1);
   }
 
   dumpFromCart(playerTile) {

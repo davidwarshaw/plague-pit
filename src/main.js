@@ -24,7 +24,7 @@ const config = {
     default: 'matter',
     matter: {
       gravity: { y: 1 },
-      enableSleep: true
+      enableSleep: true,
 
       // debug: {
       //   showBody: properties.debug,

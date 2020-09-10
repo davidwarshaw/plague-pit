@@ -9,6 +9,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('title', 'assets/images/title.png');
     this.load.image('title-big', 'assets/images/title_big.png');
     this.load.image('crown', 'assets/images/crown.png');
+    this.load.image('cathedral', 'assets/images/cathedral.png');
     this.load.image('moon', 'assets/images/moon.png');
     this.load.image('skull-big', 'assets/images/skull.png');
     this.load.image('skull-small', 'assets/images/skull_small.png');
@@ -45,6 +46,10 @@ export default class BootScene extends Phaser.Scene {
     });
     this.load.image('body-00', 'assets/images/body_00.png');
     this.load.image('body-01', 'assets/images/body_01.png');
+    this.load.image('body-02', 'assets/images/body_02.png');
+    this.load.image('body-03', 'assets/images/body_03.png');
+    this.load.image('body-04', 'assets/images/body_04.png');
+    this.load.image('body-05', 'assets/images/body_05.png');
 
     // UI Sprites
     this.load.spritesheet('rat', 'assets/images/rat_spritesheet.png', {

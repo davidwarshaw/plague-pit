@@ -1,4 +1,7 @@
+import bodyDefinition from '../definitions/bodyDefinition.json';
+
 import TileMath from '../utils/TileMath';
+import properties from '../properties';
 
 export default class BodySystem {
   constructor(scene, map, bodies, player) {
@@ -9,6 +12,13 @@ export default class BodySystem {
 
     this.stepDelta = 1000;
     this.currentDelta = 0;
+  }
+
+  randomBodyForLevel(level) {
+    const candidates = Object.entries(bodyDefinition)
+      .filter(e => e[1].firstLevel <= level)
+      .map(e => Number(e[0].split('-')[1]));
+    return properties.rng.getItem(candidates);
   }
 
   matrixHasTile(tile, matrixPosition, matrix) {
@@ -43,7 +53,7 @@ export default class BodySystem {
     bodiesFromBottom.forEach((body) => {
       const nextTile = Object.assign({}, body.tile);
       nextTile.y += 1;
-      if (this.map.spaceForBodyIsClear(nextTile, body.matrix, playerTile)) {
+      if (this.map.spaceForBodyIsClear(nextTile, body.matrix, playerTile, body.tile)) {
         this.map.restoreTerrainTiles(body.tile, body.matrix);
         body.tile = nextTile;
         this.map.addBodyTiles(body.tile, body.matrix);

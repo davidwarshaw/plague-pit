@@ -76,7 +76,7 @@ export default class HudScene extends Phaser.Scene {
     
         const centerX = properties.width / 2; 
         const y = 10;
-        const message = `${bar} is uncontained`;
+        const message = `${bar} breaks out`;
         this.message = this.font.render(centerX + this.offsetForText(message), y, message);
       },
       this);

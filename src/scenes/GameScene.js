@@ -72,7 +72,8 @@ export default class GameScene extends Phaser.Scene {
 
     if (this.cart && this.cart.pickUp) {
       if (this.bodies.length < this.numBodies) {
-        this.bodies.push(new Body(this, this.map, 1, this.cart));
+        const bodyType = this.bodySystem.randomBodyForLevel(this.playState.level);
+        this.bodies.push(new Body(this, this.map, bodyType, this.cart));
         this.cart.pickUpBody(this.bodies[this.bodies.length - 1]);
 
         // Update the night and bodies left whenever the car tpicks up a new body

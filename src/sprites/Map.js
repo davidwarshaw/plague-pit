@@ -23,7 +23,7 @@ export default class Map {
         else if (y === properties.groundLevel) {
           return tilesetDefinition['grass'].index;
         }
-        else if (y >= properties.groundLevel + 1 && y <= 6 && x >= 5 && x <= 6) {
+        else if (y >= properties.groundLevel + 1 && y <= 6 && x >= 6 && x <= 7) {
           return tilesetDefinition['dirt-removed'].index;
         }
         else if (y === properties.mapHeightTiles - 1) {
@@ -191,26 +191,42 @@ export default class Map {
     newTiles.forEach((tile) => this.setMatterColliders(tile));
   }
 
-  spaceForBodyIsClear(tile, matrix, playerTile) {
+  spaceForBodyIsClear(tile, matrix, playerTile, previousTile) {
     const tileClearness = matrix
       .map((row, y) =>
         row.map((matrixTileIndex, x) => {
           if (matrixTileIndex !== -1) {
+            const mapTile = { x: tile.x + x, y: tile.y + y };
+            // console.log(`tile: ${tile.x}, ${tile.y}`);
+            // console.log(`matrix tile: ${x}, ${y}`);
+            // console.log(`mapTile: ${mapTile.x}, ${mapTile.y}`);
+
             // If the player is on the tile, it's not clear
-            if (tile.x + x === playerTile.x && tile.y + y === playerTile.y) {
+            if (mapTile.x === playerTile.x && mapTile.y === playerTile.y) {
+              // console.log('false from player');
               return false;
             }
 
+            // If this body is on the tile, it is clear. This must be calculated from
+            // where the body is now, not where it will be
+            if (previousTile && this.scene.bodySystem.matrixHasTile(mapTile, previousTile, matrix)) {
+              // console.log('true from body');
+              return true;
+            }
+
             // If the tilemap has a collision tile, it's not clear
-            const collisionTile = this.tilemap.getTileAt(tile.x + x, tile.y + y, true, 'collision');
+            const collisionTile = this.tilemap.getTileAt(mapTile.x, mapTile.y, true, 'collision');
 
             // console.log(`tile: (${tile.x}, ${tile.y})`);
             // console.log(`(${x}, ${y})`);
             // console.log(`collisionTile.index: ${collisionTile.index}`);
             if (!collisionTile) {
+              // console.log('true from null tile');
               return true;
             }
-            return !this.getCollisionIndices().includes(collisionTile.index);
+            const isCollisionTile = this.getCollisionIndices().includes(collisionTile.index);
+            // console.log(`${!isCollisionTile} from index: ${collisionTile.index}`);
+            return !isCollisionTile;
           }
         })
       )

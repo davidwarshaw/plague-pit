@@ -18,7 +18,9 @@ export default class GameOverScene extends Phaser.Scene {
       ['so goeth the way', 'of all flesh'],
       ['thus passes', 'worldly glory'],
       ['all is vanity'],
-      ['all those proud', 'shall be brought low']
+      ['all those proud', 'shall be brought low'],
+      ['all are of dirt', 'to dirt', 'shall all return'],
+      ['a regal meal', 'for maggots', 'a fatted king maketh'],
     ];
 
     this.images = [];

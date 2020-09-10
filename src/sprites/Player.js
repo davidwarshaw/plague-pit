@@ -268,5 +268,14 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     if (!onSomething && !this.inJump && !this.inAction) {
       this.anims.play("player_jump", true);
     }
+
+    // Keep player in bounds
+    if (this.x < 0) {
+      this.setPosition(0 + 1, this.y);
+      this.setVelocityX(0);
+    } else if (this.x > (properties.mapWidthTiles * properties.tileWidth)) {
+      this.setPosition((properties.mapWidthTiles * properties.tileWidth) - 1, this.y);
+      this.setVelocityX(0);
+    }
   }
 }
