@@ -14,7 +14,7 @@ export default class WinScene extends Phaser.Scene {
   create() {
     this.font = new Font(this);
 
-    const text = ['dance, flirt, and make away', 'the nights end is pale embrace', 'but not to-day'];
+    const text = ['dance, flirt, and make away', 'nights end is pale embrace', 'but not to-day'];
 
     this.images = [];
 

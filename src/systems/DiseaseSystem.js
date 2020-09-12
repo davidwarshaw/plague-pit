@@ -13,7 +13,7 @@ export default class DiseaseSystem {
 
     this.pestilence = 0;
     this.pestilenceIncreaseFactor = 0.001;
-    this.pestilenceDiminishFactor = 0.001;
+    this.pestilenceDiminishFactor = 0.005;
 
     this.infection = 0;
     this.infectionIncreaseFactor = 0.02;
