@@ -153,17 +153,19 @@ export default class GameScene extends Phaser.Scene {
     this.player.anims.play("player_idle", true);
     this.player.setVelocity(0);
     
-    this.endPlayTimer = this.time.delayedCall(
-      properties.levelWaitMillis,
-      () => {
-        if (win) {
-          this.sounds.nextLevel.play();
-          this.nextLevel();
-        } else {
-          this.sounds.gameOver.play();
-          this.gameOver();
-        }
-      },
-      [], this);
+    if (win) {
+      this.sounds.nextLevel.play();
+      this.endPlayTimer = this.time.delayedCall(
+        properties.levelWaitMillis,
+        () => this.nextLevel(),
+        [], this);
+    } else {
+      this.sounds.gameOver.play();
+      this.endPlayTimer = this.time.delayedCall(
+        properties.levelWaitMillis,
+        () => this.gameOver(),
+        [], this);
+    }
+
   }
 }
