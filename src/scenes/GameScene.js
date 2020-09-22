@@ -55,6 +55,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.buttonIsPressed = true;
     this.gamePadListeners = false;
+    
+    this.sounds = {
+      gameOver: this.sound.add('game-over'),
+      nextLevel: this.sound.add('next-level'),
+    }
   }
 
   update(time, delta) {
@@ -152,8 +157,10 @@ export default class GameScene extends Phaser.Scene {
       properties.levelWaitMillis,
       () => {
         if (win) {
+          this.sounds.nextLevel.play();
           this.nextLevel();
         } else {
+          this.sounds.gameOver.play();
           this.gameOver();
         }
       },

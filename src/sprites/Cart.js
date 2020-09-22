@@ -58,8 +58,13 @@ export default class Cart extends Phaser.GameObjects.Sprite {
       this
     );
 
+    this.sounds = {
+      dump: scene.sound.add('dump'),
+    };
+
     // Start by picking up a body
     this.pickUp = true;
+    
   }
 
   pickUpBody(body) {
@@ -73,6 +78,8 @@ export default class Cart extends Phaser.GameObjects.Sprite {
     }
     this.carryingBody.dumpFromCart(playerTile);
     this.carryingBody = null;
+
+    this.sounds.dump.play();
   }
 
   update(scene, delta, playerTile) {

@@ -11,6 +11,12 @@ export default class DigSystem {
     this.bodySystem = bodySystem;
     this.player = player;
 
+    this.sounds = {
+      dig: scene.sound.add('dig'),
+      fill: scene.sound.add('fill'),
+      hit: scene.sound.add('hit'),
+      stone: scene.sound.add('stone'),
+    };
   }
 
   update(delta, playerTile) {
@@ -27,6 +33,7 @@ export default class DigSystem {
       }
       this.player.y = this.player.y - properties.tileHeight;
       this.map.fillTile(playerTile);
+      this.sounds.fill.play();
       new DigDirt(this.scene, this.map, neighborTile, this.player.digDirection);
       return;
     }
@@ -46,14 +53,17 @@ export default class DigSystem {
     // If it's a body, hit it
     if (this.map.getBodyIndices().includes(mapTile.index)) {
       this.bodySystem.hitBody(mapTile, this.player.digDirection, playerTile);
+      this.sounds.hit.play();
     }
 
     // Early exit if we can't dig
     if (!this.map.getDiggableIndices().includes(mapTile.index)) {
+      this.sounds.stone.play();
       return;
     }
 
     this.map.digTile(mapTile);
+    this.sounds.dig.play();
     new DigDirt(this.scene, this.map, mapTile, this.player.digDirection);
   }
 }

@@ -170,6 +170,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         }
       }
     });
+
+    this.sounds = {
+      walk: scene.sound.add('walk', { loop: true }),
+      jump: scene.sound.add('jump'),
+    };
   }
 
   isTouching() {
@@ -200,6 +205,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       // console.log('Keys: jump');
       if (!this.inAction) {
         this.anims.play("player_jump", true);
+        this.sounds.jump.play();
+        this.sounds.walk.stop();
       }
       this.setVelocityY(-this.jumpSpeed);
       this.jumpPressed = true;
@@ -209,6 +216,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     if (inputMultiplexer.action() && !this.actionPressed && !this.inAction) {
       // console.log('Keys: action');
       this.anims.play("player_action", true);
+      this.sounds.walk.stop();
       this.actionPressed = true;
       this.inAction = true;
       actionThisUpdate = true;
@@ -234,6 +242,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       // console.log('Keys: left');
       if (!this.inAction && !this.inJump) {
         this.anims.play("player_walk", true);
+        if (!this.sounds.walk.isPlaying) {
+          this.sounds.walk.play();
+        }
       }
       const walkSpeed = onSomething ? this.walkSpeed : this.airwalkSpeed;
       this.setVelocityX(-walkSpeed);
@@ -245,6 +256,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       // console.log('Keys: right');
       if (!this.inAction && !this.inJump) {
         this.anims.play("player_walk", true);
+        if (!this.sounds.walk.isPlaying) {
+          this.sounds.walk.play();
+        }
       }
       const walkSpeed = onSomething ? this.walkSpeed : this.airwalkSpeed;
       this.setVelocityX(walkSpeed);
@@ -255,6 +269,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     } else {
       if (!this.inAction && !this.inJump) {
         this.anims.play("player_idle", true);
+        this.sounds.walk.stop();
       }
       this.setVelocityX(0);
     }

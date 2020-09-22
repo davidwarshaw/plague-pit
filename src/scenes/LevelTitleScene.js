@@ -30,6 +30,10 @@ export default class LevelTitleScene extends Phaser.Scene {
     this.input.keyboard.on('keydown', () => this.keyDown());
     this.buttonIsPressed = true;
     this.gamePadListeners = false;
+
+    this.sounds = {
+      enter: this.sound.add('enter'),
+    }
   }
 
   update() {
@@ -49,6 +53,7 @@ export default class LevelTitleScene extends Phaser.Scene {
   }
 
   keyDown() {
+    this.sounds.enter.play();
     this.input.gamepad.removeAllListeners();
     this.scene.start('GameScene', this.playState);
     this.scene.start('HudScene', this.playState);

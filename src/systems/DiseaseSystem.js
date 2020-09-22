@@ -11,15 +11,24 @@ export default class DiseaseSystem {
 
     this.numBodiesExposed = 0;
 
+    this.barLength = 10;
+
+    this.oldPestilence = 0;
     this.pestilence = 0;
     this.pestilenceIncreaseFactor = 0.001;
     this.pestilenceDiminishFactor = 0.005;
 
+    this.oldInfection = 0;
     this.infection = 0;
     this.infectionIncreaseFactor = 0.02;
     this.infectionDiminishFactor = 0.02;
 
     this.pestilences = {};
+
+    this.sounds = {
+      pestilence: scene.sound.add('pestilence'),
+      infection: scene.sound.add('infection'),
+    };
   }
 
   allBodiesBuried() {
@@ -99,6 +108,19 @@ export default class DiseaseSystem {
   update(delta) {
     this.updatePestilence(delta);
     this.updateInfection(delta);
+
+    const oldPestilenceBar = Math.floor((this.oldPestilence / 100) * this.barLength);
+    const pestilenceBar = Math.floor((this.pestilence / 100) * this.barLength)
+    if (oldPestilenceBar < pestilenceBar) {
+      this.sounds.pestilence.play('', { detune: pestilenceBar * 150 });
+    }
+    const oldInfectionBar = Math.floor((this.oldInfection / 100) * this.barLength);
+    const infectionBar = Math.floor((this.infection / 100) * this.barLength)
+    if (oldInfectionBar < infectionBar) {
+      this.sounds.infection.play('', { detune: infectionBar * 150 });
+    }
+    this.oldPestilence = this.pestilence;
+    this.oldInfection = this.infection;
 
     // console.log(`pestilence: ${this.pestilence} infection: ${this.infection}`);
     return { pestilence: this.pestilence, infection: this.infection };

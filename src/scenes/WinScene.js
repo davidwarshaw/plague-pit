@@ -31,6 +31,10 @@ export default class WinScene extends Phaser.Scene {
     this.input.keyboard.on('keydown', () => this.keyDown());
     this.buttonIsPressed = false;
     this.gamePadListeners = false;
+
+    this.sounds = {
+      enter: this.sound.add('enter'),
+    }
   }
 
   update() {
@@ -51,6 +55,7 @@ export default class WinScene extends Phaser.Scene {
   }
 
   keyDown() {
+    this.sounds.enter.play();
     this.input.gamepad.removeAllListeners();
     this.scene.start('TitleScene', this.playState);
   }

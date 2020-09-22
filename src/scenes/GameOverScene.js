@@ -40,6 +40,10 @@ export default class GameOverScene extends Phaser.Scene {
     this.input.keyboard.on('keydown', () => this.keyDown());
     this.buttonIsPressed = false;
     this.gamePadListeners = false;
+
+    this.sounds = {
+      newGame: this.sound.add('new-game'),
+    }
   }
 
   update() {
@@ -60,6 +64,7 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   keyDown() {
+    this.sounds.newGame.play();
     this.input.gamepad.removeAllListeners();
     this.scene.start('LevelTitleScene', this.playState);
   }
