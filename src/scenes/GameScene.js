@@ -152,6 +152,7 @@ export default class GameScene extends Phaser.Scene {
     
     this.player.anims.play("player_idle", true);
     this.player.setVelocity(0);
+    this.player.sounds.walk.stop();
     
     if (win) {
       this.sounds.nextLevel.play();

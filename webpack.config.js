@@ -1,14 +1,14 @@
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
-var CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // Phaser webpack config
-var phaserModule = path.join(__dirname, '/node_modules/phaser/');
-var phaser = path.join(phaserModule, 'src/phaser.js');
+const phaserModule = path.join(__dirname, '/node_modules/phaser/');
+const phaser = path.join(phaserModule, 'src/phaser.js');
 
-var definePlugin = new webpack.DefinePlugin({
+const definePlugin = new webpack.DefinePlugin({
   __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
 
   // I did this to make webpack work, but I'm not really sure it should always be true
@@ -60,7 +60,7 @@ module.exports = {
       server: {
         baseDir: ['./', './dev']
       }
-    })
+    }),
   ],
   module: {
     rules: [
